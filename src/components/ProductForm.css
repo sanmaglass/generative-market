@@ -1,0 +1,331 @@
+/* ─────────────────────────────────────────
+   PRODUCT FORM — Premium v2
+───────────────────────────────────────── */
+
+.pf-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow-y: auto;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Topbar ─────────────────────────────── */
+.pf-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(14px, var(--safe-top, 14px)) 20px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(6, 5, 14, 0.88);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  z-index: 10;
+}
+
+.pf-back {
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 0;
+  transition: var(--t-fast);
+}
+.pf-back:hover { color: var(--text-primary); }
+
+.pf-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+  letter-spacing: 0.01em;
+}
+
+.pf-submit-top {
+  background: var(--accent-teal);
+  color: #000;
+  padding: 7px 18px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 800;
+  box-shadow: 0 3px 14px hsl(170,80%,45%,0.4);
+  transition: var(--t-med);
+  letter-spacing: 0.02em;
+}
+.pf-submit-top:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+.pf-submit-top:disabled { opacity: 0.25; }
+
+/* ── Preview ────────────────────────────── */
+.pf-preview-wrap {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.pf-preview-img {
+  max-height: 155px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.6));
+  transition: var(--t-slow);
+}
+
+.pf-tag-badge {
+  position: absolute;
+  bottom: 18px;
+  right: 28px;
+  background: var(--accent-teal);
+  color: #000;
+  font-size: 0.62rem;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: 0 4px 12px hsl(170,80%,45%,0.5);
+}
+
+/* ── Form ───────────────────────────────── */
+.pf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: 40px;
+}
+
+.pf-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pf-section-title {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.pf-field label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.pf-field input,
+input[type="text"],
+input[type="number"],
+input[type="tel"],
+textarea {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  color: var(--text-primary);
+  font-size: max(16px, 0.95rem);
+  width: 100%;
+  transition: var(--t-med);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.pf-field input:focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  border-color: hsl(170,80%,45%,0.6);
+  background: rgba(0,212,170,0.04);
+  box-shadow: 0 0 0 3px hsl(170,80%,45%,0.1);
+}
+
+/* ── Price Tier Card ────────────────────── */
+.pf-tier {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  transition: var(--t-med);
+}
+
+.pf-tier.enabled {
+  border-color: hsl(170,80%,45%,0.35);
+  background: hsl(170,80%,45%,0.04);
+  box-shadow: 0 2px 12px hsl(170,80%,45%,0.1);
+}
+
+.pf-tier-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: var(--t-fast);
+}
+.pf-tier-header:hover { background: rgba(255,255,255,0.03); }
+
+.pf-tier-icon { font-size: 1.1rem; margin-right: 10px; }
+
+.pf-tier-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.pf-spacer { flex: 1; }
+
+.pf-check {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--text-muted);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #000;
+  transition: var(--t-fast);
+}
+.pf-check.active {
+  background: var(--accent-teal);
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 0 3px hsl(170,80%,45%,0.2);
+}
+
+.pf-tier-fields { padding: 0 16px 14px; }
+
+.pf-tier-row { display: flex; gap: 8px; align-items: flex-end; }
+.pf-tier-col-qty { width: 50px; }
+.pf-tier-col-label { flex: 1; }
+.pf-tier-col-price { flex: 1.5; position: relative; }
+
+.pf-tier-row input {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  padding: 9px 8px;
+  text-align: center;
+  font-size: max(16px, 0.9rem) !important;
+  border-radius: var(--radius-sm);
+}
+
+.pf-currency-sym {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: var(--accent-teal);
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.pf-tier-col-price input {
+  padding-left: 22px;
+  text-align: left;
+  font-weight: 900 !important;
+  color: var(--accent-teal) !important;
+}
+
+/* ── Promo Pills ────────────────────────── */
+.pf-promo-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.pf-promo-btn {
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-bright);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: var(--t-med);
+  letter-spacing: 0.02em;
+}
+.pf-promo-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,0.07); }
+.pf-promo-btn.active {
+  background: hsl(170,80%,45%,0.15);
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+  box-shadow: 0 0 0 2px hsl(170,80%,45%,0.15);
+}
+
+/* ── Availability Row ───────────────────── */
+.pf-avail-row { flex-direction: row; align-items: center; justify-content: space-between; }
+.pf-avail-btns { display: flex; gap: 5px; }
+.pf-avail-btn {
+  padding: 7px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  transition: var(--t-fast);
+}
+.pf-avail-btn.avail { background: hsl(150,50%,45%,0.15); color: #4caf7d; border-color: #4caf50; }
+.pf-avail-btn.unavail { background: hsl(348,95%,65%,0.15); color: var(--accent-red); border-color: var(--accent-red); }
+
+.pf-stock-input { width: 100px !important; font-size: max(16px,0.8rem) !important; padding: 7px 10px !important; }
+
+/* ── Template Pills ─────────────────────── */
+.pf-templates-mini { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+::-webkit-scrollbar { height: 2px; }
+
+.pf-template-pill {
+  padding: 9px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: var(--t-med);
+}
+.pf-template-pill:hover { color: var(--text-secondary); background: rgba(255,255,255,0.07); }
+.pf-template-pill.active {
+  background: var(--accent-gold);
+  color: #000;
+  border-color: var(--accent-gold);
+  box-shadow: 0 4px 20px hsl(42,90%,58%,0.4);
+}
+
+/* ── Submit CTA ─────────────────────────── */
+.pf-submit {
+  margin: 20px;
+  padding: 18px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, hsl(170,80%,45%), hsl(150,70%,38%));
+  color: #000;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 30px hsl(170,80%,45%,0.45);
+  transition: var(--t-med);
+  position: relative;
+  overflow: hidden;
+}
+.pf-submit::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.5s ease;
+}
+.pf-submit:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.08); box-shadow: 0 12px 40px hsl(170,80%,45%,0.5); }
+.pf-submit:hover:not(:disabled)::before { left: 140%; }
+.pf-submit:disabled { opacity: 0.2; filter: grayscale(1); }

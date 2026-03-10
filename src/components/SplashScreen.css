@@ -1,0 +1,162 @@
+.splash-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  z-index: 9999;
+  overflow: hidden;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animated orbs behind everything */
+.splash-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: orb 8s ease-in-out infinite;
+}
+.splash-orb-1 {
+  width: 300px; height: 300px;
+  background: hsl(250,80%,50%,0.3);
+  top: 5%; left: -10%;
+  animation-duration: 10s;
+}
+.splash-orb-2 {
+  width: 200px; height: 200px;
+  background: hsl(42,90%,55%,0.25);
+  bottom: 10%; right: -5%;
+  animation-duration: 7s;
+  animation-delay: -3s;
+}
+.splash-orb-3 {
+  width: 150px; height: 150px;
+  background: hsl(170,80%,45%,0.2);
+  top: 50%; left: 60%;
+  animation-duration: 9s;
+  animation-delay: -5s;
+}
+
+.splash-container.entering { opacity: 0; transform: scale(1.05); }
+.splash-container.visible  { opacity: 1; transform: scale(1); }
+.splash-container.exiting  { opacity: 0; transform: scale(0.96); }
+
+.splash-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+/* Image ring */
+.image-wrapper {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
+}
+
+.image-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    hsl(250,80%,65%),
+    hsl(42,90%,58%),
+    hsl(170,80%,45%),
+    hsl(250,80%,65%)
+  );
+  animation: spin 8s linear infinite;
+  filter: blur(1px);
+}
+
+.image-inner {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  transform: translateY(20px);
+  opacity: 0;
+  filter: blur(8px);
+  transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.visible .image-inner {
+  transform: translateY(0);
+  opacity: 1;
+  filter: blur(0);
+}
+
+.splash-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Text */
+.splash-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: hsl(250,80%,70%);
+  padding: 4px 14px;
+  border: 1px solid hsl(250,80%,65%,0.4);
+  border-radius: 999px;
+  background: hsl(250,80%,65%,0.1);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.6s cubic-bezier(0.19,1,0.22,1) 0.2s;
+}
+.visible .splash-badge {
+  opacity: 1; transform: translateY(0);
+}
+
+.splash-title {
+  font-family: 'Syne', sans-serif;
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0;
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.35s;
+}
+.visible .splash-title { opacity: 1; transform: translateY(0); }
+
+.splash-subtitle {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 1rem;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.5s;
+}
+.visible .splash-subtitle { opacity: 1; transform: translateY(0); }
+
+/* Loading bar */
+.splash-loader {
+  width: 120px;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.8s;
+}
+.visible .splash-loader { opacity: 1; }
+.splash-loader-fill {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(250,80%,65%), hsl(42,90%,58%));
+  border-radius: 999px;
+  animation: shimmer 1.5s linear infinite;
+  background-size: 200% 100%;
+}

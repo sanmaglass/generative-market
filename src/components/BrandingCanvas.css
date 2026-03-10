@@ -1,0 +1,173 @@
+/* ─────────────────────────────────────────
+   BRANDING CANVAS (Processing) — Premium v2
+───────────────────────────────────────── */
+
+.bc-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 40px 24px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Ambient glow behind the spinner */
+.bc-container::before {
+  content: '';
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: hsl(250,80%,60%,0.12);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(80px);
+  animation: orb 8s ease-in-out infinite;
+}
+
+.bc-spinner-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 360px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Ring Spinner ───────────────────────── */
+.bc-ring {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bc-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Outer pulse ring */
+.bc-ring::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid hsl(250,80%,65%,0.15);
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+.bc-ring-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  border-top-color: var(--accent-gold);
+  border-right-color: hsl(250,80%,65%);
+  animation: spin 1.2s linear infinite;
+  filter: drop-shadow(0 0 6px hsl(42,90%,58%,0.7));
+}
+
+.bc-ring-icon {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 0 16px hsl(42,90%,58%,0.7));
+  animation: floatY 2s ease-in-out infinite;
+}
+
+/* ── Status text ────────────────────────── */
+.bc-status {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-align: center;
+  min-height: 1.5em;
+  letter-spacing: -0.01em;
+}
+
+/* ── Progress bar ───────────────────────── */
+.bc-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.bc-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, hsl(250,80%,65%), hsl(42,90%,58%), hsl(170,80%,45%));
+  background-size: 200% 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.5s var(--ease-spring);
+  box-shadow: 0 0 10px hsl(42,90%,58%,0.6);
+  animation: shimmer 2s linear infinite;
+}
+
+/* ── Hint ───────────────────────────────── */
+.bc-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ── Steps ──────────────────────────────── */
+.bc-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.bc-step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color var(--t-med);
+}
+
+.bc-step.active { color: var(--text-primary); }
+.bc-step.done  { color: var(--accent-teal); }
+
+.bc-step-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: all var(--t-med);
+}
+
+.bc-step.done .bc-step-dot {
+  background: var(--accent-teal);
+  color: #000;
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 10px hsl(170,80%,45%,0.5);
+}
+
+.bc-step.active .bc-step-dot {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 8px hsl(42,90%,58%,0.4);
+}
