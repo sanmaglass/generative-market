@@ -1,16 +1,31 @@
-# React + Vite
+# 🤖 GENERATIVE MARKET
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Generative Market** es una aplicación Web (PWA) de alto impacto diseñada para automatizar la creación de artes publicitarios para productos usando Inteligencia Artificial.
 
-Currently, two official plugins are available:
+## ✨ Características Principales
+- **IA Background Removal**: Limpieza automática de fondos de productos localmente.
+- **Supermarket-Style Canvas**: Generación de artes con precios llamativos, badges de oferta y branding personalizado.
+- **Premium Design System**: Interfaz moderna con glassmorphism, tipografía `Syne` y animaciones fluidas.
+- **AI Assistant Mascot**: Un avatar personalizado basado en el usuario que guía la experiencia.
+- **PWA Ready**: Se puede instalar en iOS/Android directamente desde el navegador.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Cómo Ejecutar Localmente
+1. Clona el repositorio: `git clone https://github.com/sanmaglass/generative-market.git`
+2. Instala dependencias: `npm install`
+3. Inicia el servidor: `npm run dev`
+4. Abre `http://localhost:5173`
 
-## React Compiler
+O simplemente usa el script en Windows:
+- Haz doble clic en `run_market.bat`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tecnologías
+- **React + Vite**
+- **@imgly/background-removal**: IA para remover fondos.
+- **PWA Capabilities**: Offline support e instalable.
+- **CSS3 High-End**: Glasmorphism y HSL palettes.
 
-## Expanding the ESLint configuration
+## 💾 Persistencia
+Los ajustes de marca (Nombre, WhatsApp, Localización) se guardan automáticamente en el `localStorage` de tu navegador.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+*Desarrollado con ❤️ por Antigravity*
