@@ -253,103 +253,180 @@ function drawSavingBadge(ctx, productData, W, H, template, brandAccent) {
 
 function drawBottomBand(ctx, W, H, bandY, bandH, template, productAccent, brandAccent, productData, brand, currency) {
     const isDark = template === 'dark' || template === 'story'
-    const accent = isDark ? productAccent : brandAccent
-
-    if (isDark) {
-        ctx.fillStyle = 'rgba(255,255,255,0.05)'
-        ctx.fillRect(0, bandY, W, bandH)
-        ctx.strokeStyle = hexToRgba(accent, 0.25)
-        ctx.lineWidth = 2
-        ctx.beginPath(); ctx.moveTo(0, bandY); ctx.lineTo(W, bandY); ctx.stroke()
-    } else {
-        ctx.fillStyle = brandAccent
-        ctx.fillRect(0, bandY, W, bandH)
-    }
-
-    const sym = getCurrencySymbol(currency)
-    const tiers = buildTiers(productData, sym)
-    const textMain = isDark ? '#ffffff' : '#000000'
-    const textSub = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)'
     const pad = W * 0.045
 
+    // ── Band background ──
+    if (isDark) {
+        // Dark base + red/yellow gradient for "oferta" energy
+        const bandGrad = ctx.createLinearGradient(0, bandY, W, bandY + bandH)
+        bandGrad.addColorStop(0, 'rgba(20, 8, 8, 0.97)')
+        bandGrad.addColorStop(0.5, 'rgba(30, 10, 5, 0.97)')
+        bandGrad.addColorStop(1, 'rgba(20, 8, 8, 0.97)')
+        ctx.fillStyle = bandGrad
+        ctx.fillRect(0, bandY, W, bandH)
+
+        // Top border: red/gold gradient line (thick)
+        const borderGrad = ctx.createLinearGradient(0, bandY, W, bandY)
+        borderGrad.addColorStop(0, '#ff2200')
+        borderGrad.addColorStop(0.5, '#ffcc00')
+        borderGrad.addColorStop(1, '#ff2200')
+        ctx.fillStyle = borderGrad
+        ctx.fillRect(0, bandY, W, 5)
+    } else {
+        const bandGrad = ctx.createLinearGradient(0, bandY, 0, bandY + bandH)
+        bandGrad.addColorStop(0, brandAccent)
+        bandGrad.addColorStop(1, colorDarken(brandAccent, 0.7))
+        ctx.fillStyle = bandGrad
+        ctx.fillRect(0, bandY, W, bandH)
+        ctx.fillStyle = 'rgba(255,255,255,0.15)'
+        ctx.fillRect(0, bandY, W, 3)
+    }
+
     // ── Product name ──
-    const nameY = bandY + bandH * 0.19
+    const nameY = bandY + bandH * 0.18
     ctx.save()
-    ctx.font = `800 ${W * 0.046}px Outfit, sans-serif`
-    ctx.fillStyle = textMain
+    ctx.font = `900 ${W * 0.052}px Outfit, sans-serif`
+    ctx.fillStyle = '#ffffff'
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
-    const maxNameW = W - pad * 2
+    // White text with subtle red glow
+    ctx.shadowColor = '#ff4400'
+    ctx.shadowBlur = 15
+    const maxNameW = W - pad * 2.5
     let name = (productData.productName || '').toUpperCase()
     while (name.length > 3 && ctx.measureText(name).width > maxNameW) name = name.slice(0, -1)
     if (name !== (productData.productName || '').toUpperCase()) name += '…'
     ctx.fillText(name, pad, nameY)
+    ctx.shadowBlur = 0
     ctx.restore()
 
-    // ── Price Pills ──
+    // ── Price Pills (supermarket offer style) ──
+    const sym = getCurrencySymbol(currency)
+    const tiers = buildTiers(productData, sym)
     const numTiers = tiers.length
+
     if (numTiers > 0) {
-        const pillAreaY = bandY + bandH * 0.38
-        const pillH = bandH * 0.40
-        const gapX = W * 0.022
+        const gapX = W * 0.025
+        const pillAreaY = bandY + bandH * 0.33
+        const pillH = bandH * 0.54
         const pillW = (W - pad * 2 - gapX * (numTiers - 1)) / numTiers
 
         tiers.forEach((tier, i) => {
             const px = pad + i * (pillW + gapX)
             const py = pillAreaY
+            const isFirst = i === 0
+
+            ctx.save()
 
             if (isDark) {
-                // Glassmorphism: layered fills for frosted effect
-                const isFirst = i === 0
-                // Base glass
-                ctx.fillStyle = isFirst ? hexToRgba(accent, 0.08) : 'rgba(255,255,255,0.04)'
-                roundRect(ctx, px, py, pillW, pillH, 22)
-                ctx.fill()
-                // Inner highlight (shimmer)
-                const shimmer = ctx.createLinearGradient(px, py, px, py + pillH * 0.5)
-                shimmer.addColorStop(0, 'rgba(255,255,255,0.10)')
-                shimmer.addColorStop(1, 'rgba(255,255,255,0)')
-                ctx.fillStyle = shimmer
-                roundRect(ctx, px, py, pillW, pillH, 22)
-                ctx.fill()
-                // Border
-                ctx.strokeStyle = isFirst ? hexToRgba(accent, 0.55) : 'rgba(255,255,255,0.12)'
-                ctx.lineWidth = isFirst ? 1.5 : 1
-                roundRect(ctx, px, py, pillW, pillH, 22)
-                ctx.stroke()
+                if (isFirst) {
+                    // Hero price — red/yellow "ofertón" gradient
+                    const heroGrad = ctx.createLinearGradient(px, py, px + pillW, py + pillH)
+                    heroGrad.addColorStop(0, '#cc0000')
+                    heroGrad.addColorStop(0.45, '#ff2200')
+                    heroGrad.addColorStop(1, '#ff7700')
+                    ctx.fillStyle = heroGrad
+                    roundRect(ctx, px, py, pillW, pillH, 20)
+                    ctx.fill()
+
+                    // Inner highlight shimmer
+                    const shine = ctx.createLinearGradient(px, py, px, py + pillH * 0.45)
+                    shine.addColorStop(0, 'rgba(255,255,255,0.22)')
+                    shine.addColorStop(1, 'rgba(255,255,255,0)')
+                    ctx.fillStyle = shine
+                    roundRect(ctx, px, py, pillW, pillH, 20)
+                    ctx.fill()
+
+                    // Gold border glow
+                    ctx.shadowColor = '#ffcc00'
+                    ctx.shadowBlur = 18
+                    ctx.strokeStyle = '#ffdd00'
+                    ctx.lineWidth = 3
+                    roundRect(ctx, px, py, pillW, pillH, 20)
+                    ctx.stroke()
+                    ctx.shadowBlur = 0
+                } else {
+                    // Secondary prices — dark glass with subtle orange tint
+                    ctx.fillStyle = 'rgba(255, 80, 0, 0.1)'
+                    roundRect(ctx, px, py, pillW, pillH, 18)
+                    ctx.fill()
+                    const shine2 = ctx.createLinearGradient(px, py, px, py + pillH * 0.5)
+                    shine2.addColorStop(0, 'rgba(255,255,255,0.08)')
+                    shine2.addColorStop(1, 'rgba(255,255,255,0)')
+                    ctx.fillStyle = shine2
+                    roundRect(ctx, px, py, pillW, pillH, 18)
+                    ctx.fill()
+                    ctx.strokeStyle = 'rgba(255, 140, 0, 0.4)'
+                    ctx.lineWidth = 1.5
+                    roundRect(ctx, px, py, pillW, pillH, 18)
+                    ctx.stroke()
+                }
             } else {
-                ctx.fillStyle = i === 0 ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.09)'
-                roundRect(ctx, px, py, pillW, pillH, 20)
+                ctx.fillStyle = i === 0 ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.12)'
+                roundRect(ctx, px, py, pillW, pillH, 18)
                 ctx.fill()
             }
 
-            // Tier label "x12 manga"
-            ctx.font = `600 ${W * 0.021}px Outfit, sans-serif`
-            ctx.fillStyle = isDark
-                ? (i === 0 ? hexToRgba(accent, 0.9) : 'rgba(255,255,255,0.45)')
-                : 'rgba(0,0,0,0.5)'
+            // Tier label
+            const labelColor = isDark
+                ? (isFirst ? 'rgba(255,240,160,0.95)' : 'rgba(255,180,100,0.7)')
+                : 'rgba(0,0,0,0.55)'
+            ctx.font = `700 ${W * 0.022}px Outfit, sans-serif`
+            ctx.fillStyle = labelColor
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
-            ctx.fillText(`x${tier.qty} ${tier.label}`, px + pillW / 2, py + pillH * 0.28)
+            ctx.fillText(`x${tier.qty} ${tier.label}`, px + pillW / 2, py + pillH * 0.25)
 
-            // Price — auto-size font to fit pill
+            // BIG bold price — fills the pill
             const priceStr = `${tier.sym}${formatPrice(tier.price)}`
-            let fontSize = pillW * 0.22
-            ctx.font = `800 ${fontSize}px Outfit, sans-serif`
-            while (ctx.measureText(priceStr).width > pillW * 0.9 && fontSize > pillW * 0.1) {
+            let fontSize = pillW * 0.28
+            ctx.font = `900 ${fontSize}px Outfit, sans-serif`
+            while (ctx.measureText(priceStr).width > pillW * 0.88 && fontSize > pillW * 0.1) {
                 fontSize -= 1
-                ctx.font = `800 ${fontSize}px Outfit, sans-serif`
+                ctx.font = `900 ${fontSize}px Outfit, sans-serif`
             }
-            ctx.fillStyle = isDark ? (i === 0 ? accent : '#fff') : '#000'
-            ctx.fillText(priceStr, px + pillW / 2, py + pillH * 0.70)
+
+            // Price text color: first = bold white with yellow glow, rest = white
+            if (isDark && isFirst) {
+                ctx.shadowColor = '#ffee00'
+                ctx.shadowBlur = 20
+                ctx.fillStyle = '#ffffff'
+            } else if (isDark) {
+                ctx.fillStyle = '#ff9922'
+                ctx.shadowBlur = 0
+            } else {
+                ctx.fillStyle = '#000000'
+            }
+            ctx.fillText(priceStr, px + pillW / 2, py + pillH * 0.68)
+            ctx.shadowBlur = 0
+
+            ctx.restore()
         })
+
+        // ── Starburst "¡OFERTA!" on the first pill ──
+        if (isDark && numTiers > 0) {
+            const bx = pad + pillW - W * 0.04
+            const by = pillAreaY - W * 0.055
+            drawStarburst(ctx, bx, by, W * 0.062, 8)
+            ctx.fillStyle = '#ffdd00'
+            ctx.fill()
+            ctx.strokeStyle = '#ff2200'
+            ctx.lineWidth = 2.5
+            ctx.stroke()
+
+            ctx.font = `900 ${W * 0.018}px Outfit, sans-serif`
+            ctx.fillStyle = '#cc0000'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillText('¡$!', bx, by)
+        }
     }
 
-    // ── Bottom strip: availability + stock + WhatsApp ──
-    const stripY = bandY + bandH * 0.85
-    const dotColor = productData.available !== false ? '#4caf7d' : '#ff4d6d'
+    // ── Bottom strip ──
+    const stripY = bandY + bandH * 0.90
+    const dotColor = productData.available !== false ? '#44ff88' : '#ff4d6d'
     const availLabel = productData.available !== false ? '● Disponible' : '● Agotado'
-    ctx.font = `600 ${W * 0.022}px Outfit, sans-serif`
+    ctx.font = `700 ${W * 0.022}px Outfit, sans-serif`
     ctx.fillStyle = dotColor
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
@@ -357,14 +434,14 @@ function drawBottomBand(ctx, W, H, bandY, bandH, template, productAccent, brandA
 
     if (productData.stockQty) {
         ctx.font = `500 ${W * 0.02}px Outfit, sans-serif`
-        ctx.fillStyle = textSub
+        ctx.fillStyle = 'rgba(255,255,255,0.5)'
         ctx.textAlign = 'center'
         ctx.fillText(`Stock: ${productData.stockQty}`, W / 2, stripY)
     }
 
     if (brand?.whatsapp) {
         ctx.font = `600 ${W * 0.021}px Outfit, sans-serif`
-        ctx.fillStyle = isDark ? hexToRgba(accent, 0.75) : 'rgba(0,0,0,0.55)'
+        ctx.fillStyle = 'rgba(255, 200, 80, 0.85)'
         ctx.textAlign = 'right'
         ctx.fillText(`📱 ${brand.whatsapp}`, W - pad, stripY)
     }
@@ -509,6 +586,32 @@ function drawCornerAccents(ctx, W, H, accent) {
 }
 
 // ─── Utilities ──
+
+function drawStarburst(ctx, cx, cy, r, spikes) {
+    const outerR = r
+    const innerR = r * 0.5
+    let rot = (Math.PI / 2) * 3
+    const step = Math.PI / spikes
+    ctx.beginPath()
+    ctx.moveTo(cx, cy - outerR)
+    for (let i = 0; i < spikes; i++) {
+        ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR)
+        rot += step
+        ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR)
+        rot += step
+    }
+    ctx.lineTo(cx, cy - outerR)
+    ctx.closePath()
+}
+
+function colorDarken(hex, factor = 0.8) {
+    // Simple hex darkener
+    const h = hex.replace('#', '')
+    const r = Math.round(parseInt(h.slice(0,2), 16) * factor)
+    const g = Math.round(parseInt(h.slice(2,4), 16) * factor)
+    const b = Math.round(parseInt(h.slice(4,6), 16) * factor)
+    return `rgb(${r},${g},${b})`
+}
 
 function roundRect(ctx, x, y, w, h, r) {
     ctx.beginPath()
