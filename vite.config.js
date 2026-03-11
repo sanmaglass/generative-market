@@ -7,7 +7,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'splash_ai.png'],
+      injectRegister: 'auto',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,png,svg}'],
+        maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // 50MB for AI model
+        navigateFallback: 'index.html',
+      },
       manifest: {
         name: 'Generative Market',
         short_name: 'GenMarket',
