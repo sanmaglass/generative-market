@@ -4,7 +4,7 @@ import './BrandingCanvas.css'
 const CANVAS_W = 1080
 const CANVAS_H = 1080
 
-export default function BrandingCanvas({ rawImage, preProcessedBlob, productData, brand, onDone }) {
+export default function BrandingCanvas({ items, productData, brand, onDone }) {
     const canvasRef = useRef()
     const [status, setStatus] = useState('Finalizando arte...')
     const [progress, setProgress] = useState(0)
@@ -14,27 +14,41 @@ export default function BrandingCanvas({ rawImage, preProcessedBlob, productData
         async function run() {
             try {
                 setProgress(10)
+                setStatus('Procesando imágenes...')
 
-                // Step 1: Get product image (check if already pre-processed)
-                let pBlob = preProcessedBlob
+                // Step 1: Process all items — use pre-removed BG or remove now
+                const productImages = []
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i]
+                    let blob = item.bgBlob
 
-                if (!pBlob && productData.removeBg) {
-                    setStatus('Recortando imagen (IA)...')
-                    setProgress(30)
-                    const { removeBackground } = await import('@imgly/background-removal')
-                    pBlob = await removeBackground(rawImage, {
-                        model: 'medium',
-                        output: { format: 'image/png', quality: 1 }
-                    })
-                } else if (!productData.removeBg) {
-                    pBlob = rawImage
+                    if (!blob && productData.removeBg) {
+                        setStatus(`Recortando imagen ${i + 1}/${items.length} (IA)...`)
+                        setProgress(10 + (i / items.length) * 40)
+                        try {
+                            const { removeBackground } = await import('@imgly/background-removal')
+                            blob = await removeBackground(item.file, {
+                                model: 'medium',
+                                output: { format: 'image/png', quality: 1 }
+                            })
+                        } catch {
+                            blob = item.file
+                        }
+                    } else if (!productData.removeBg) {
+                        blob = item.file
+                    }
+
+                    if (cancelled) return
+                    const img = await loadImage(URL.createObjectURL(blob))
+                    productImages.push({ img, qty: item.qty })
                 }
 
                 if (cancelled) return
                 setProgress(60)
                 setStatus('Analizando colores...')
 
-                const productImg = await loadImage(URL.createObjectURL(pBlob))
+                // Use the first image for dominant color sampling
+                const dominantColor = sampleDominantColor(productImages[0].img)
                 if (cancelled) return
 
                 setProgress(80)
@@ -45,8 +59,7 @@ export default function BrandingCanvas({ rawImage, preProcessedBlob, productData
                 canvas.height = getTemplateH(productData.template)
                 const ctx = canvas.getContext('2d')
 
-                const dominantColor = sampleDominantColor(productImg)
-                await drawBrandedImage(ctx, canvas, productImg, productData, brand, dominantColor)
+                await drawBrandedImage(ctx, canvas, productImages, productData, brand, dominantColor)
 
                 if (cancelled) return
                 setProgress(95)
@@ -147,7 +160,7 @@ function getTemplateH(template) {
     return template === 'story' ? 1920 : 1080
 }
 
-async function drawBrandedImage(ctx, canvas, productImg, productData, brand, productHue) {
+async function drawBrandedImage(ctx, canvas, productImages, productData, brand, productHue) {
     const W = canvas.width
     const H = canvas.height
     const template = productData.template || 'dark'
@@ -157,15 +170,12 @@ async function drawBrandedImage(ctx, canvas, productImg, productData, brand, pro
 
     // ── Background ──
     if (template === 'dark') {
-        // Pure dark base
         ctx.fillStyle = '#060610'
         ctx.fillRect(0, 0, W, H)
-        // Subtle grid
         ctx.strokeStyle = hexToRgba(accent, 0.03)
         ctx.lineWidth = 1
         for (let x = 0; x < W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke() }
         for (let y = 0; y < H; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke() }
-        // Dual organic aura
         const aura1 = ctx.createRadialGradient(W * 0.38, H * 0.30, 0, W * 0.38, H * 0.30, W * 0.50)
         aura1.addColorStop(0, hexToRgba(accent, 0.11))
         aura1.addColorStop(1, 'transparent')
@@ -176,7 +186,6 @@ async function drawBrandedImage(ctx, canvas, productImg, productData, brand, pro
         aura2.addColorStop(1, 'transparent')
         ctx.fillStyle = aura2
         ctx.fillRect(0, 0, W, H)
-
     } else if (template === 'market') {
         const bgMuted = colorDarken(accent, 0.1)
         ctx.fillStyle = '#f5f5f0'
@@ -187,7 +196,6 @@ async function drawBrandedImage(ctx, canvas, productImg, productData, brand, pro
                 ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill()
             }
         }
-
     } else if (template === 'story') {
         const grad = ctx.createLinearGradient(0, 0, 0, H)
         grad.addColorStop(0, '#0a0a16')
@@ -200,6 +208,30 @@ async function drawBrandedImage(ctx, canvas, productImg, productData, brand, pro
         glow.addColorStop(1, 'transparent')
         ctx.fillStyle = glow
         ctx.fillRect(0, 0, W, H)
+    } else if (template === 'neon') {
+        ctx.fillStyle = '#050505'
+        ctx.fillRect(0, 0, W, H)
+        ctx.strokeStyle = hexToRgba(accent, 0.15)
+        ctx.lineWidth = 1.5
+        for (let y = H * 0.4; y < H; y += (y - H * 0.3) * 0.1) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke()
+        }
+        for (let x = -W; x < W * 2; x += 60) {
+            ctx.beginPath(); ctx.moveTo(W / 2, H * 0.4); ctx.lineTo(x, H); ctx.stroke()
+        }
+        const glow = ctx.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, W * 0.6)
+        glow.addColorStop(0, hexToRgba(accent, 0.25))
+        glow.addColorStop(1, 'transparent')
+        ctx.fillStyle = glow
+        ctx.fillRect(0, 0, W, H)
+    } else if (template === 'minimal') {
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, W, H)
+        const glow = ctx.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, W * 0.5)
+        glow.addColorStop(0, hexToRgba(accent, 0.08))
+        glow.addColorStop(1, 'transparent')
+        ctx.fillStyle = glow
+        ctx.fillRect(0, 0, W, H)
     }
 
     // ── Bottom info band (drawn first, product will float on top) ──
@@ -207,9 +239,9 @@ async function drawBrandedImage(ctx, canvas, productImg, productData, brand, pro
     const bandH = H - bandY
     drawBottomBand(ctx, W, H, bandY, bandH, template, accent, brandAccent, productData, brand, currency)
 
-    // ── Product image floats over the band boundary ──
+    // ── Product images float over the band boundary ──
     const productZone = getProductZone(template, W, H)
-    drawProductImage(ctx, productImg, productZone, template)
+    drawMultiProductImages(ctx, productImages, productZone, template)
 
     // ── Header: Logo + company name ──
     await drawHeader(ctx, brand, W, H, template, brandAccent)
@@ -252,7 +284,7 @@ function drawSavingBadge(ctx, productData, W, H, template, brandAccent) {
 }
 
 function drawBottomBand(ctx, W, H, bandY, bandH, template, productAccent, brandAccent, productData, brand, currency) {
-    const isDark = template === 'dark' || template === 'story'
+    const isDark = template === 'dark' || template === 'story' || template === 'neon'
     const pad = W * 0.045
 
     // ── Band background ──
@@ -267,9 +299,9 @@ function drawBottomBand(ctx, W, H, bandY, bandH, template, productAccent, brandA
 
         // Top border: red/gold gradient line (thick)
         const borderGrad = ctx.createLinearGradient(0, bandY, W, bandY)
-        borderGrad.addColorStop(0, '#ff2200')
-        borderGrad.addColorStop(0.5, '#ffcc00')
-        borderGrad.addColorStop(1, '#ff2200')
+        borderGrad.addColorStop(0, template === 'neon' ? productAccent : '#ff2200')
+        borderGrad.addColorStop(0.5, template === 'neon' ? '#ffffff' : '#ffcc00')
+        borderGrad.addColorStop(1, template === 'neon' ? productAccent : '#ff2200')
         ctx.fillStyle = borderGrad
         ctx.fillRect(0, bandY, W, 5)
     } else {
@@ -453,9 +485,71 @@ function getProductZone(template, W, H) {
     return { x: W * 0.08, y: H * 0.09, w: W * 0.84, h: H * 0.54 }
 }
 
-function drawProductImage(ctx, img, zone, template) {
+// Expand productImages array by qty: [{img, qty:2}] → [{img}, {img}]
+function expandProducts(productImages) {
+    const expanded = []
+    for (const { img, qty } of productImages) {
+        for (let i = 0; i < qty; i++) expanded.push(img)
+    }
+    return expanded
+}
+
+// Calculate grid layout positions for N items inside a zone
+function computeLayout(imgs, zone) {
+    const n = imgs.length
+    if (n === 0) return []
     const { x, y, w, h } = zone
-    const scale = Math.min(w / img.width, h / img.height) * 0.95
+
+    if (n === 1) {
+        return [{ img: imgs[0], x, y, w, h }]
+    }
+    if (n === 2) {
+        const cellW = w * 0.48
+        const gap = w * 0.04
+        return [
+            { img: imgs[0], x: x, y, w: cellW, h },
+            { img: imgs[1], x: x + cellW + gap, y, w: cellW, h },
+        ]
+    }
+    if (n === 3) {
+        const cellW = w * 0.31
+        const gap = w * 0.035
+        return imgs.map((img, i) => ({
+            img, x: x + i * (cellW + gap), y, w: cellW, h,
+        }))
+    }
+    // 4+ items: 2-column grid
+    const cols = n <= 4 ? 2 : 3
+    const rows = Math.ceil(n / cols)
+    const gapX = w * 0.03
+    const gapY = h * 0.03
+    const cellW = (w - gapX * (cols - 1)) / cols
+    const cellH = (h - gapY * (rows - 1)) / rows
+    return imgs.map((img, i) => {
+        const col = i % cols
+        const row = Math.floor(i / cols)
+        return {
+            img,
+            x: x + col * (cellW + gapX),
+            y: y + row * (cellH + gapY),
+            w: cellW,
+            h: cellH,
+        }
+    })
+}
+
+function drawMultiProductImages(ctx, productImages, zone, template) {
+    const imgs = expandProducts(productImages)
+    const layout = computeLayout(imgs, zone)
+
+    for (const cell of layout) {
+        drawSingleProductImage(ctx, cell.img, cell, template)
+    }
+}
+
+function drawSingleProductImage(ctx, img, zone, template) {
+    const { x, y, w, h } = zone
+    const scale = Math.min(w / img.width, h / img.height) * 0.90
     const dw = img.width * scale
     const dh = img.height * scale
     const dx = x + (w - dw) / 2
@@ -464,29 +558,27 @@ function drawProductImage(ctx, img, zone, template) {
     // Deep 3D Shadow (multi-layer)
     ctx.save()
     ctx.shadowColor = 'rgba(0,0,0,0.35)'
-    ctx.shadowBlur = 70
-    ctx.shadowOffsetY = 28
+    ctx.shadowBlur = 50
+    ctx.shadowOffsetY = 20
     ctx.drawImage(img, dx, dy, dw, dh)
     ctx.shadowColor = 'rgba(0,0,0,0.50)'
-    ctx.shadowBlur = 12
-    ctx.shadowOffsetY = 8
+    ctx.shadowBlur = 10
+    ctx.shadowOffsetY = 6
     ctx.drawImage(img, dx, dy, dw, dh)
     ctx.restore()
 
     // ── Mirror / Glass Floor Reflection ──
-    if (template === 'dark' || template === 'story') {
+    if (template === 'dark' || template === 'story' || template === 'neon') {
         ctx.save()
         const reflectY = dy + dh
-        const reflectH = dh * 0.26
-        // Draw flipped product
+        const reflectH = dh * 0.20
         ctx.translate(dx + dw / 2, reflectY)
         ctx.scale(1, -1)
-        ctx.globalAlpha = 0.22
+        ctx.globalAlpha = 0.18
         ctx.drawImage(img, -dw / 2, 0, dw, dh)
         ctx.scale(1, -1)
         ctx.translate(-(dx + dw / 2), -reflectY)
         ctx.globalAlpha = 1
-        // Gradient mask to fade reflection out
         const mask = ctx.createLinearGradient(0, reflectY, 0, reflectY + reflectH)
         mask.addColorStop(0, 'rgba(6,6,16,0.25)')
         mask.addColorStop(1, 'rgba(6,6,16,0.98)')
@@ -498,7 +590,7 @@ function drawProductImage(ctx, img, zone, template) {
 
 async function drawHeader(ctx, brand, W, H, template, accent) {
     ctx.save()
-    const isDark = template === 'dark' || template === 'story'
+    const isDark = template === 'dark' || template === 'story' || template === 'neon'
     const textColor = isDark ? '#ffffff' : '#111111'
     const pad = W * 0.045
     const headerH = W * 0.115
@@ -634,12 +726,8 @@ function hexToRgba(hex, alpha) {
     return `rgba(${r},${g},${b},${alpha})`
 }
 
-function colorDarken(hex, amount) {
-    const r = Math.round(parseInt(hex.slice(1, 3), 16) * amount)
-    const g = Math.round(parseInt(hex.slice(3, 5), 16) * amount)
-    const b = Math.round(parseInt(hex.slice(5, 7), 16) * amount)
-    return `rgb(${r},${g},${b})`
-}
+
+
 
 function isColorDark(hex) {
     const r = parseInt(hex.slice(1, 3), 16)

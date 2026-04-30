@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './ProductForm.css'
 
 const PROMO_OPTIONS = [
@@ -23,10 +23,16 @@ const TEMPLATES = [
     { id: 'dark', label: 'Premium Dark', emoji: '🌙' },
     { id: 'market', label: 'Clean Market', emoji: '🏪' },
     { id: 'story', label: 'Social Story', emoji: '📱' },
+    { id: 'neon', label: 'Cyber Neon', emoji: '⚡' },
+    { id: 'minimal', label: 'Minimal White', emoji: '🤍' },
 ]
 
-export default function ProductForm({ rawImage, aspectRatio, onBack, onDone }) {
-    const previewUrl = rawImage ? URL.createObjectURL(rawImage) : null
+export default function ProductForm({ items, setItems, onAddMore, onBack, onDone }) {
+    const addCameraRef = useRef()
+    const addGalleryRef = useRef()
+
+    // Determine aspect ratio from first item
+    const aspectRatio = items.length > 0 ? items[0].aspect : 1
 
     const [form, setForm] = useState(() => {
         // Load Sticky Settings
@@ -72,7 +78,11 @@ export default function ProductForm({ rawImage, aspectRatio, onBack, onDone }) {
     }
 
     function canSubmit() {
-        return form.productName.trim() && (form.unitEnabled && form.unitPrice)
+        const hasName = form.productName.trim().length > 0;
+        const hasPrice = (form.unitEnabled && form.unitPrice) || 
+                         (form.packEnabled && form.packPrice) || 
+                         (form.boxEnabled && form.boxPrice);
+        return hasName && hasPrice && items.length > 0;
     }
 
     function handleSubmit() {
@@ -94,6 +104,26 @@ export default function ProductForm({ rawImage, aspectRatio, onBack, onDone }) {
         onDone(form)
     }
 
+    function handleAddFile(e) {
+        const files = Array.from(e.target.files)
+        if (files.length > 0) {
+            onAddMore(files)
+        }
+        e.target.value = null
+    }
+
+    function updateItemQty(id, delta) {
+        setItems(prev => prev.map(it =>
+            it.id === id ? { ...it, qty: Math.max(1, Math.min(6, it.qty + delta)) } : it
+        ))
+    }
+
+    function removeItem(id) {
+        setItems(prev => prev.filter(it => it.id !== id))
+    }
+
+    const totalProducts = items.reduce((sum, it) => sum + it.qty, 0)
+
     return (
         <div className="pf-container fade-up">
             <div className="pf-topbar">
@@ -106,10 +136,39 @@ export default function ProductForm({ rawImage, aspectRatio, onBack, onDone }) {
                 >Generar</button>
             </div>
 
-            <div className="pf-preview-wrap">
-                <img src={previewUrl} alt="Producto" className="pf-preview-img" />
-                <div className="pf-tag-badge">IA Activa ✨</div>
+            {/* ─── Multi-product Preview ─── */}
+            <div className="pf-combo-section">
+                <div className="pf-combo-header">
+                    <h3 className="pf-section-title">📸 Productos en la imagen ({totalProducts})</h3>
+                </div>
+                <div className="pf-combo-grid">
+                    {items.map(item => (
+                        <div key={item.id} className="pf-combo-card glass">
+                            <button className="pf-combo-remove" onClick={() => removeItem(item.id)}>✕</button>
+                            <img src={item.url} alt="Producto" className="pf-combo-img" />
+                            <div className="pf-combo-qty">
+                                <button className="pf-qty-btn" onClick={() => updateItemQty(item.id, -1)}>−</button>
+                                <span className="pf-qty-val">x{item.qty}</span>
+                                <button className="pf-qty-btn" onClick={() => updateItemQty(item.id, +1)}>+</button>
+                            </div>
+                            {item.bgBlob && <div className="pf-combo-ai-tag">✨ IA</div>}
+                        </div>
+                    ))}
+                    {/* Add more button */}
+                    <div className="pf-combo-add">
+                        <button className="pf-combo-add-btn" onClick={() => addCameraRef.current.click()}>
+                            📸<br /><span>Cámara</span>
+                        </button>
+                        <button className="pf-combo-add-btn" onClick={() => addGalleryRef.current.click()}>
+                            🖼️<br /><span>Galería</span>
+                        </button>
+                    </div>
+                </div>
+                <p className="pf-combo-hint">Ajusta la cantidad con − / + · Hasta 6 del mismo producto</p>
             </div>
+
+            <input ref={addCameraRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleAddFile} />
+            <input ref={addGalleryRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleAddFile} />
 
             <div className="pf-form">
                 <div className="pf-section">
@@ -177,10 +236,26 @@ export default function ProductForm({ rawImage, aspectRatio, onBack, onDone }) {
                 <div className="pf-section">
                     <h3 className="pf-section-title">✨ Branding & Status</h3>
                     <div className="pf-field">
+                        <label>Etiqueta Promocional</label>
                         <div className="pf-promo-grid">
-                            {ECO_BADGES.slice(1, 4).map(opt => (
+                            {PROMO_OPTIONS.map(opt => (
                                 <button
-                                    key={opt.value}
+                                    key={`promo-${opt.value}`}
+                                    className={`pf-promo-btn ${form.promo === opt.value ? 'active' : ''}`}
+                                    onClick={() => set('promo', opt.value)}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="pf-field">
+                        <label>Sello de Ahorro</label>
+                        <div className="pf-promo-grid">
+                            {ECO_BADGES.map(opt => (
+                                <button
+                                    key={`eco-${opt.value}`}
                                     className={`pf-promo-btn ${form.eco === opt.value ? 'active' : ''}`}
                                     onClick={() => set('eco', opt.value)}
                                 >

@@ -95,6 +95,173 @@
   box-shadow: 0 4px 12px hsl(170,80%,45%,0.5);
 }
 
+/* ── Combo / Multi-product Grid ─────────── */
+.pf-combo-section {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.pf-combo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pf-combo-grid {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+}
+
+.pf-combo-card {
+  position: relative;
+  min-width: 110px;
+  max-width: 130px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-bright);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.04);
+  transition: var(--t-med);
+}
+
+.pf-combo-card:hover {
+  border-color: hsl(170,80%,45%,0.4);
+}
+
+.pf-combo-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: hsl(348,95%,55%);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(6, 5, 14, 0.9);
+  cursor: pointer;
+  z-index: 2;
+  transition: var(--t-fast);
+  line-height: 1;
+}
+.pf-combo-remove:hover {
+  transform: scale(1.15);
+  background: hsl(348,95%,45%);
+}
+
+.pf-combo-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 8px;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.4));
+}
+
+.pf-combo-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pf-qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border-bright);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--t-fast);
+  line-height: 1;
+}
+.pf-qty-btn:hover {
+  background: hsl(170,80%,45%,0.2);
+  border-color: var(--accent-teal);
+}
+.pf-qty-btn:active {
+  transform: scale(0.92);
+}
+
+.pf-qty-val {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--accent-teal);
+  min-width: 28px;
+  text-align: center;
+}
+
+.pf-combo-ai-tag {
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: var(--accent-teal);
+  background: hsl(170,80%,45%,0.12);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+}
+
+.pf-combo-add {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.pf-combo-add-btn {
+  flex: 1;
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--border-bright);
+  background: rgba(255,255,255,0.02);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  transition: var(--t-med);
+  padding: 8px 6px;
+}
+.pf-combo-add-btn span {
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+.pf-combo-add-btn:hover {
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+  background: hsl(170,80%,45%,0.05);
+}
+
+.pf-combo-hint {
+  margin-top: 6px;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
 /* ── Form ───────────────────────────────── */
 .pf-form {
   display: flex;

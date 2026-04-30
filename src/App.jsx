@@ -20,9 +20,7 @@ export default function App() {
     } catch { return null }
   })
 
-  const [rawImage, setRawImage] = useState(null)
-  const [aspectRatio, setAspectRatio] = useState(1) // w/h
-  const [removedBgBlob, setRemovedBgBlob] = useState(null) // Parallel AI processing
+  const [items, setItems] = useState([]) // [{ id, file, url, aspect, bgBlob, qty }]
   const [productData, setProductData] = useState(null)
   const [resultBlob, setResultBlob] = useState(null)
   const [resultAccent, setResultAccent] = useState(null)
@@ -33,29 +31,35 @@ export default function App() {
     setScreen('home')
   }
 
-  async function handleImageSelected(file) {
-    const url = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      setAspectRatio(img.width / img.height)
-      setRawImage(file)
-      setScreen('form')
-    }
-    img.src = url
+  async function handleImageSelected(files) {
+    const newItems = await Promise.all(files.map(async (file) => {
+      const url = URL.createObjectURL(file)
+      const aspect = await new Promise(resolve => {
+        const img = new Image()
+        img.onload = () => resolve(img.width / img.height)
+        img.src = url
+      })
+      return { id: Math.random().toString(36).slice(2), file, url, aspect, bgBlob: null, qty: 1 }
+    }))
 
-    // ⚡ Turbo: start BG removal after 1.5s so the form loads first (UI stays fluid)
-    setTimeout(async () => {
-      try {
-        const { removeBackground } = await import('@imgly/background-removal')
-        const blob = await removeBackground(file, {
-          model: 'small', // faster, still great quality
-          output: { format: 'image/png', quality: 1 }
-        })
-        setRemovedBgBlob(blob)
-      } catch (e) {
-        console.warn('Silent BG removal failed:', e)
-      }
-    }, 1500)
+    setItems(prev => [...prev, ...newItems])
+    setScreen('form')
+
+    // ⚡ Turbo: start BG removal
+    newItems.forEach(item => {
+      setTimeout(async () => {
+        try {
+          const { removeBackground } = await import('@imgly/background-removal')
+          const blob = await removeBackground(item.file, {
+            model: 'small',
+            output: { format: 'image/png', quality: 1 }
+          })
+          setItems(current => current.map(it => it.id === item.id ? { ...it, bgBlob: blob } : it))
+        } catch (e) {
+          console.warn('Silent BG removal failed for', item.id, e)
+        }
+      }, 500)
+    })
   }
 
   function handleFormDone(data) {
@@ -70,8 +74,7 @@ export default function App() {
   }
 
   function handleReset() {
-    setRawImage(null)
-    setRemovedBgBlob(null)
+    setItems([])
     setProductData(null)
     setResultBlob(null)
     setScreen('home')
@@ -90,12 +93,17 @@ export default function App() {
         <Home brand={brand} onImageSelected={handleImageSelected} onEditBrand={() => setScreen('onboarding')} />
       )}
       {screen === 'form' && (
-        <ProductForm rawImage={rawImage} aspectRatio={aspectRatio} onBack={() => setScreen('home')} onDone={handleFormDone} />
+        <ProductForm 
+          items={items} 
+          setItems={setItems}
+          onAddMore={handleImageSelected}
+          onBack={() => setScreen('home')} 
+          onDone={handleFormDone} 
+        />
       )}
       {(screen === 'processing') && (
         <BrandingCanvas
-          rawImage={rawImage}
-          preProcessedBlob={removedBgBlob}
+          items={items}
           productData={productData}
           brand={brand}
           onDone={handleCanvasDone}

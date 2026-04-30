@@ -6,8 +6,11 @@ export default function Home({ brand, onImageSelected, onEditBrand }) {
     const cameraInputRef = useRef()
 
     function handleFile(e) {
-        const file = e.target.files[0]
-        if (file) onImageSelected(file)
+        const files = Array.from(e.target.files)
+        if (files.length > 0) {
+            onImageSelected(files)
+        }
+        e.target.value = null
     }
 
     const accent = brand?.colorPreset?.primary || '#f5c842'
@@ -38,6 +41,7 @@ export default function Home({ brand, onImageSelected, onEditBrand }) {
                 <h1 className="home-title fade-up stagger-1">
                     Crea imágenes<br />
                     <span style={{ color: accent }}>que venden</span>
+                    <span style={{ fontSize: '0.35em', opacity: 0.5, marginLeft: 8, verticalAlign: 'super', letterSpacing: '0.05em' }}>v2.0</span>
                 </h1>
                 <p className="home-subtitle fade-up stagger-2">
                     Foto del producto → Arte pro con precios y branding. En segundos. Con IA.
@@ -95,7 +99,7 @@ export default function Home({ brand, onImageSelected, onEditBrand }) {
 
             {/* Hidden file inputs */}
             <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleFile} />
-            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+            <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleFile} />
         </div>
     )
 }
